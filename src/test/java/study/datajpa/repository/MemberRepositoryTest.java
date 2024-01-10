@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
@@ -270,6 +271,74 @@ class MemberRepositoryTest {
         System.out.println("member6 = " + member6);
 
     }
+
+    @Test
+    public void findMemberLazy() {
+        //given
+
+        // member1 -> teamA
+        // member2 -> teamB
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member memberA = new Member("memberA", 10, teamA);
+        Member memberB = new Member("memberB", 10, teamB);
+        memberRepository.save(memberA);
+        memberRepository.save(memberB);
+
+        em.flush();
+        em.clear();
+
+        // when
+        List<Member> members = memberRepository.findMembersByUsername("memberA");
+        for (Member member : members) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            System.out.println("member.getClass() = " + member.getClass());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+//        List<Member> members = em.createQuery("select m from Member m join fetch m.team t", Member.class)
+//                .getResultList();
+//        for (Member member : members) {
+//            System.out.println("memberA = " + memberA);
+//        }
+    }
+
+    @Test
+    public void queryHint() {
+
+        //given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadOnlyByUsername(member1.getUsername());
+        findMember.setUsername("member2");
+        em.flush();
+    }
+
+    @Test
+    public void lock() {
+        //given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> result = memberRepository.findLockByUsername(member1.getUsername());
+    }
+
+    @Test
+    public void callCustom() {
+        List<Member> findMembers = memberRepository.findMemberCustom();
+        for (Member findMember : findMembers) {
+            System.out.println("findMember = " + findMember);
+        }
+    }
+
+
 
 
 }

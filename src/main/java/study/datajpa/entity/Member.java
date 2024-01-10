@@ -6,16 +6,19 @@ import lombok.*;
 import static jakarta.persistence.FetchType.*;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of = {"id", "username", "age"})
 @NamedQuery(
         name = "Member.findByUsername",
         query = "select m from Member m where m.username = :username"
 )
-public class Member {
+@NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
+public class Member extends JpaBaseEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     private Long id;
     private String username;
