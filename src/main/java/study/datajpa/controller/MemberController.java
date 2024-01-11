@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.repository.MemberRepository;
 
@@ -29,23 +30,25 @@ public class MemberController {
     }
 
     @GetMapping("/members")
-    public Page<Member> list(Pageable pageable) { // page, size , sort, desc
+    public Page<MemberDto> list(Pageable pageable) { // page, size , sort, desc
 
         // http://localhost:8080/members?page=1&size=3 , default값 ( pageSize 같은 ) 걸 바꾸고싶으면
         // 글로벌 설정  - application.yml spring.data.web.pageable.default-page-size
         // 개별 설정  - @PageableDefault(size = 10, sort = "username") Pageable Pageable
+
         System.out.println("pageable.getOffset() = " + pageable.getOffset());
         System.out.println("pageable.getPageNumber() = " + pageable.getPageNumber());
         System.out.println("pageable.getSort() = " + pageable.getSort());
         System.out.println("pageable.getPageSize() = " + pageable.getPageSize());
-        Page<Member> page = memberRepository.findAll(pageable);
+        Page<Member> page = memberRepository.findAll(pageable); // 엔티티 노출은 절대 금지임
+        Page<MemberDto> map = page.map(MemberDto::new);
 
         // ++ 페이징 정보가 둘 이상이면 접두사로 구분
         // @Qualifier("member) Pageable memberPageable, @Qualifier("order") Pageable orderPageable, ...
         // ex ) /members?member_page=0&order_page=1
 
 
-        return page;
+        return map;
     }
 
 
